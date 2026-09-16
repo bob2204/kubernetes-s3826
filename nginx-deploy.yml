@@ -33,14 +33,23 @@ spec:
             periodSeconds: 5
             failureThreshold: 2
           volumeMounts:
-            - name: html
+            - name: nfsshare
               mountPath: /usr/share/nginx/html
               readOnly: yes
+              subPath: html
+            - name: nfsshare
+              mountPath: /etc/nginx/conf.d
+              subPath: nginx-conf
         - name: php
           image: php:8.4-fpm
+          volumeMounts:
+            - name: nfsshare
+              mountPath: /var/www/html
+              readOnly: yes
+              subPath: html
 
       volumes:
-        - name: html
+        - name: nfsshare
           nfs:
             server: 192.168.56.200
-            path: /html
+            path: /
