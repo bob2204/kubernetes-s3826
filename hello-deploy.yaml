@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: Blablatest
+  labels:
+    app: hello
+  name: hello
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - image: bob2606/hello-http:0.8.41
+        name: hello-http
+        env:
+          - name: TEST
+            value: BLABLA_4
+          - name: NODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        envFrom:
+          - configMapRef:
+              name: hello-env
+        ports:
+          - containerPort: 80
+            name: http
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 80 
+          periodSeconds: 15
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80 
+          periodSeconds: 5
+          failureThreshold: 2
