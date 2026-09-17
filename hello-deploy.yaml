@@ -16,6 +16,16 @@ spec:
       labels:
         app: hello
     spec:
+      initContainers:
+        - name: status
+          image: busybox
+          command:
+            - sh
+            - -c
+            - hostname > /tmp/status
+          volumeMounts:
+            - name: status
+              mountPath: /tmp
       containers:
       - image: bob2606/hello-http:0.8.41
         name: hello-http
@@ -51,8 +61,5 @@ spec:
 
       volumes:
         - name: status
-          configMap:
-            name: hello-status
-            items:
-              - key: status.txt
-                path: status
+          emptyDir:
+            medium: Memory
