@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kubernetes.io/change-cause: Blablatest
+  labels:
+    app: hello
+  name: hello
+spec:
+  replicas: 2
+  serviceName: hello
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      initContainers:
+        - name: status
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              idx=$(hostname | cut -d- -f2)
+              if [ $idx -eq 0 ]
+              then
+                echo "Primaire" > /tmp/status
+              else
+                echo "Secondaire n°$idx" > /tmp/status
+              fi
+          volumeMounts:
+            - name: status
+              mountPath: /tmp
+      containers:
+      - image: bob2606/hello-http:0.8.41
+        name: hello-http
+        env:
+          - name: TEST
+            value: BLABLA_4
+          - name: NODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        envFrom:
+          - configMapRef:
+              name: hello-env
+        ports:
+          - containerPort: 80
+            name: http
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 80 
+          periodSeconds: 15
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80 
+          periodSeconds: 5
+          failureThreshold: 2
+        volumeMounts:
+          - name: status
+            mountPath: /var/lib/hello-http
+            readOnly: yes
+
+      volumes:
+        - name: status
+          emptyDir:
+            medium: Memory
