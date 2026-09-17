@@ -44,3 +44,15 @@ spec:
             port: 80 
           periodSeconds: 5
           failureThreshold: 2
+        volumeMounts:
+          - name: status
+            mountPath: /var/lib/hello-http
+            readOnly: yes
+
+      volumes:
+        - name: status
+          configMap:
+            name: hello-status
+            items:
+              - key: status.txt
+                path: status
