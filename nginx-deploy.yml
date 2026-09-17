@@ -16,6 +16,22 @@ spec:
       labels:
         app: nginx
     spec:
+      initContainers:
+        # Solution pour le chown d'un fichier issu d'une CM (read-only par essence)
+        - image: nginx:1.27
+          name: chown
+          command:
+            - bash
+            - -c
+            - |
+              cp /tmp/d1/default.conf /tmp/d2/default.conf
+              chown nginx:nginx /tmp/d2/default.conf
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /tmp/d1
+            - name: nginx
+              mountPath: /tmp/d2
+
       containers:
         - image: nginx:1.27
           name: nginx
@@ -37,9 +53,8 @@ spec:
               mountPath: /usr/share/nginx/html
               readOnly: yes
               subPath: html
-            - name: nfsshare
+            - name: nginx
               mountPath: /etc/nginx/conf.d
-              subPath: nginx-conf
         - name: php
           image: php:8.4-fpm
           volumeMounts:
@@ -53,3 +68,12 @@ spec:
           nfs:
             server: 192.168.56.200
             path: /
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+            items:
+              - key: default.conf
+                path: default.conf
+                mode: 0600
+        - name: nginx
+          emptyDir:
