@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  template:
+    spec:
+      containers:
+        - name: hello-http
+          volumeMounts:
+            - name: hello
+              mountPath: /var/lib/hello-http/status
+              subPath: hello/status.txt
+      volumes:
+        - name: hello
+          nfs:
+            server: 192.168.56.200
+            path: /

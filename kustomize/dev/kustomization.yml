@@ -26,6 +26,7 @@ configMapGenerator:
 
 patches:
   - path: hello-env-cm-patch.yml
+  - path: hello-volumes-patch.yml
 
 replacements:
   - source:
